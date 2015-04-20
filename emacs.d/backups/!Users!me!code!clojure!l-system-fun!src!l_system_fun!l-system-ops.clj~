@@ -1,0 +1,65 @@
+(ns l-system-fun.ops
+  (:require [l-system-fun.fun-turtle :as t]))
+
+;; Our tool processes a language wherein we use a small set of
+;; codified assumptions expressed as state to permit the creation
+;; of complex instruction sets expressed in strings where each
+;; character maps directly to a behaviour.
+
+;; We take in a piece of structured data, uncreatively named 'state',
+;; and return a modified version of that data. In our state, we have
+;; a turtle, a representation of our position on the drawing plane,
+;; a sub-system, which provides our angle for rotations and distance,
+;; for movements, and a stack, which can store turtles to permit
+;; branching paths in our L-System processor.
+
+(defn blank-state [subsystem]
+  {:stack ()
+   :subsystem subsystem 
+   :turtle (t/turtle 0 0 0 true)})
+
+;; We define some operations; step, right, left, stack-push, stack-pop, and colour.
+
+(defn step
+  "Move the turtle forward by the distance assigned to the system"
+  [state]
+  (let [system (:subsystem state)
+        distance (:distance system)
+        turtle (:turtle state)]
+    (update-in state [:turtle] t/move-turtle distance)))
+
+;; Rightward (clockwise) rotation is subtractive, because maths
+
+(defn right
+  "Rotate the turtle rightward/clockwise by the angle assigned to the system"
+  [state]
+  (let [system (:subsystem state)
+        angle (:angle system)
+        turtle (:turtle state)]
+    (update-in state [:turtle] t/rotate-turtle (- angle))))
+
+(defn left
+  "Rotate the turtle leftward/counterclockwise by the angle assigned to the system"
+  [state]
+  (let [system (:subsystem state)
+        angle (:angle system)
+        turtle (:turtle state)]
+    (update-in state [:turtle] t/rotate-turtle angle)))
+
+(defn stack-push
+  "Push the current turtle in the state onto the stack"
+  [state]
+  (let [turtle (:turtle state)]
+    (update-in state [:stack] conj turtle)))
+
+(defn stack-pop
+  "Replace the current turtle in the state with the first one on the stack"
+  [state]
+  (let [new-turtle (first (:stack state))]
+    (-> state
+        (assoc-in [:turtle] new-turtle)
+        (update-in [:stack] pop))))
+
+
+
+({\a 1 \b 2} \a)
