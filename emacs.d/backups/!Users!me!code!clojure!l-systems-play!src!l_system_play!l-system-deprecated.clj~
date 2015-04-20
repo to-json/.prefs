@@ -1,0 +1,105 @@
+(ns l-system-play.core
+  (:require [quil.core :as q]
+            [quil.middleware :as m]))
+
+;; Functions for drawing with the turtle
+
+(defn turtle [x y angle pen-state]
+  {:x x :y y :angle angle :pen pen-state})
+
+(defn next-position [x y angle distance]
+  [(+ x (* (Math/cos (Math/toRadians angle)) distance))
+   (+ y (* (Math/sin (Math/toRadians angle)) distance))])
+
+(defn move-turtle [a-turtle distance]
+  (let [current [(:x a-turtle) (:y a-turtle)]
+        angle (:angle a-turtle)
+        pen (:pen a-turtle)
+        next (apply next-position (flatten [current angle distance]))]
+    (do
+      (if pen (apply q/line (flatten [current next])))
+      (apply turtle (flatten [next angle pen])))))
+
+(defn rotate-turtle [current-turtle angle]
+  (turtle (:x current-turtle)
+          (:y current-turtle)
+          (mod (+ (:angle current-turtle) angle) 360)
+          (:pen current-turtle)))
+
+;; Functions for processing l-systems
+
+(defn matching-rule? [letter rule]
+  (if (seq? letter)
+    letter
+    (if (= (:pred rule) letter)
+      (:succ rule)
+      letter)))
+
+(defn process-input [ruleset letter]
+  (reduce matching-rule? letter ruleset))
+
+(defn apply-rules [system]
+  (fn [letters]
+    (flatten (map (partial process-input (:rules system)) letters))))
+
+(defn run-system [system n]
+  (apply str
+         (last (take (+ 1 n)
+                     (iterate (apply-rules system) (:axiom system))))))
+
+
+;; Functions for drawing l-systems with the turtle
+
+(def atomic-hue (atom 1))
+(def total-colors (atom 1))
+
+(defn next-hue []
+  (let [colors @total-colors
+        saturation (- colors (Math/floor (/ colors 10)))]
+    (q/stroke @atomic-hue saturation saturation)
+    (swap! atomic-hue (fn [x] (mod (inc x) colors)))))
+
+(defn process-letter [turtle letter]
+  (case letter
+    \+ (rotate-turtle turtle 60)
+    \- (rotate-turtle turtle -60)
+    \X turtle
+    \Y turtle
+    (do (next-hue)
+        (move-turtle turtle 3))))
+
+(defn draw-string [turtle string]
+  (reduce process-letter turtle string))
+
+(defn step-count [system iteration-count]
+  (count (filter (fn [x] (some #{x} [\F]))
+                 (run-system system iteration-count))))
+
+(defn setup []
+  (def iteration-count 15)
+  (def some-rules [{:pred \X :succ (seq "X+YF")} {:pred \Y :succ (seq "FX-Y")}])
+
+  (def a-system {:axiom "XY" :rules some-rules})
+ 
+  (def color-count
+    (let [base-count (step-count a-system iteration-count)]
+      (Math/floor (/ (+ base-count (Math/floor (/ base-count 256))) 2))))
+  (def drawable-system (run-system a-system iteration-count)))
+
+(defn draw [state]
+  (reset! total-colors color-count)
+  (q/color-mode :hsb color-count)
+  (q/background 0)
+  (q/translate 66 200)
+  (def my-turtle (turtle 20 20 0 true))
+  (reduce process-letter my-turtle "F")
+  (draw-string my-turtle drawable-system)
+  ;;(q/save-frame "koch-dragon-####.png")
+  )
+
+(q/defsketch l-system-play
+  :title "L(SD)-Systems Playground"
+  :size [900 900]
+  :setup setup
+  :draw draw
+  :middleware [m/fun-mode])
