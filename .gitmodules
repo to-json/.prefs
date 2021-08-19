@@ -1,0 +1,6 @@
+[submodule "dot-config/zsh-plugins-work/zsh-syntax-highlighting"]
+	path = dot-config/zsh-plugins-work/zsh-syntax-highlighting
+	url = https://github.com/zsh-users/zsh-syntax-highlighting.git
+[submodule "dot-config/zsh-plugins-work/zsh-completions"]
+	path = dot-config/zsh-plugins-work/zsh-completions
+	url = https://github.com/zsh-users/zsh-completions.git

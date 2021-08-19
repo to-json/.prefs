@@ -1,0 +1,250 @@
+" nocompatible because duh.
+set nocompatible
+
+"===============================================================================
+"************************************* VUNDLE **********************************
+"===============================================================================
+
+" Disable filetypes during bundle load
+filetype off
+call plug#begin('~/.vim/plugged')
+
+"Plugins i think i want back, or, to find replacements for
+"Plug 'kien/rainbow_parentheses.vim'
+"Plug 'kovisoft/slimv'
+"Plug 'scrooloose/nerdtree'
+"Plug 'scrooloose/nerdcommenter'
+"Plug 'Shougo/neocomplete.vim'
+"Plug 'Shougo/neomru.vim'
+"Plug 'Shougo/vimproc.vim'
+"Plug 'Shougo/vimshell.vim'
+"Plug 'Shougo/unite.vim'
+"Plug 'terryma/vim-expand-region'
+"Plug 'terryma/vim-multiple-cursors'
+Plug 'altercation/vim-colors-solarized'
+Plug 'bling/vim-airline'
+Plug 'hashivim/vim-terraform'
+Plug 'jpalardy/vim-slime'
+Plug 'kana/vim-textobj-user'
+Plug 'lifepillar/vim-mucomplete'
+Plug 'neovim/nvim-lspconfig'
+Plug 'rking/ag.vim'
+Plug 'scrooloose/syntastic'
+Plug 'tpope/vim-abolish'
+Plug 'tpope/vim-fireplace'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-endwise'
+Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-sensible'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-unimpaired'
+Plug 'rust-lang/rust.vim'
+
+
+call plug#end()
+
+" re-enable filetypes
+filetype plugin indent on
+
+"===============================================================================
+"************************************* 'SET's **********************************
+"===============================================================================
+
+" Note: I have vim-sensible so a ton of this is probably redundant.
+
+" Basics
+set tabstop=2             " tab spacing
+set softtabstop=2         " unify
+set shiftwidth=2          " indent/outdent by 2 columns
+set shiftround            " always indent/outdent to the nearest tabstop
+set expandtab             " use spaces instead of tabs
+set incsearch             " highlight as you type your search.
+set t_Co=256              " enable 256-color mode.
+set number                " show line numbers
+set ruler                 " Always show info along bottom.
+set nowrap                " no word wrap
+set hidden                " hide unsaved buffers
+set hlsearch              " highlight search results
+
+" Mouse mode because I am weak
+set mouse=a
+
+" Solarized colors best colors
+" Dependency: altercation/vim-colors-solarized
+syntax enable
+set background=dark
+
+silent! colorscheme solarized
+
+" I had a serious issue with backspacing and this fixed it.
+set backspace=indent,eol,start
+
+" include additional files while searching for ctags
+set tags+=.gemtags
+set tags+=.tags
+
+"===============================================================================
+"************************************* 'LET's **********************************
+"===============================================================================
+
+" Airline because powerline exploded
+" Dependency: bling/vim-airline
+
+let g:airline_powerline_fonts = 1
+
+" Vim slime to use tmux instead of screen
+" Dependency: jpalardy/vim-slime
+let g:slime_target = "tmux"
+
+" lsp configs
+
+lua << EOF
+local on_attach = function(client, bufnr)
+local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+
+buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+-- Mappings.
+local opts = { noremap=true, silent=true }
+buf_set_keymap('n', 'gD', '<Cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+buf_set_keymap('n', 'gd', '<Cmd>lua vim.lsp.buf.definition()<CR>', opts)
+buf_set_keymap('n', 'K', '<Cmd>lua vim.lsp.buf.hover()<CR>', opts)
+buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+buf_set_keymap('n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+buf_set_keymap('n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+buf_set_keymap('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
+buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
+buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
+
+-- Set some keybinds conditional on server capabilities
+if client.resolved_capabilities.document_formatting then
+  buf_set_keymap("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
+elseif client.resolved_capabilities.document_range_formatting then
+  buf_set_keymap("n", "<space>f", "<cmd>lua vim.lsp.buf.range_formatting()<CR>", opts)
+end
+
+-- Set autocommands conditional on server_capabilities
+if client.resolved_capabilities.document_highlight then
+  vim.api.nvim_exec([[
+  hi LspReferenceRead cterm=bold ctermbg=red guibg=LightYellow
+  hi LspReferenceText cterm=bold ctermbg=red guibg=LightYellow
+  hi LspReferenceWrite cterm=bold ctermbg=red guibg=LightYellow
+  augroup lsp_document_highlight
+    autocmd! * <buffer>
+    autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
+    autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
+  augroup END
+  ]], false)
+  end
+end
+
+-- Use a loop to conveniently both setup defined servers
+-- and map buffer local keybindings when the language server attaches
+local nvim_lsp = require('lspconfig')
+local servers = { "solargraph", -- ruby
+                  "jedi_language_server", --python
+                  "gopls",
+                  "rls", --rust
+                  "yamlls", 
+                  "terraformls", 
+                  "puppet", 
+                  "bashls"}
+for _, lsp in ipairs(servers) do
+  nvim_lsp[lsp].setup { on_attach = on_attach }
+end
+
+-- specific lsp server lines
+-- haskell needs a wrapper with stack on macos
+require('lspconfig').hls.setup{ on_attach = on_attach,
+cmd = { "haskell-language-server-wrapper", "--lsp" }}
+EOF
+
+" Syntastic enable rubylint and rubocop
+" I probably should remove this and stick with solargraph
+let g:syntastic_ruby_checkers = [ 'rubocop', 'mri']
+
+"===============================================================================
+"************************************* OTHER ***********************************
+"===============================================================================
+
+" because iTerm fullscreen and vim don't get along
+if has('mouse_sgr')
+  set ttymouse=sgr
+endif
+" Automatic rc reloading
+" this doesn't work in nvim but i'm keeping it becuase i need to port it
+augroup myvimrc
+  au!
+  au BufWritePost .vimrc,_vimrc,vimrc,.gvimrc,_gvimrc,gvimrc so $MYVIMRC |
+        \ if has('gui_running') | so $MYGVIMRC | endif
+augroup END
+
+" Syntax highlighting basics
+syntax on
+
+" Haskell -> ghc
+au Bufenter *.hs compiler ghc
+
+" i forgot what this does and should figure that out
+autocmd FileType scheme au InsertEnter * :set isk+=-
+autocmd FileType scheme au InsertLeave * :set isk-=-
+
+" better rust highlighting
+au BufNewFile,BufRead *.rs set filetype=rust
+
+"===============================================================================
+"************************************* MAPPINGS ********************************
+"===============================================================================
+" Quick escape binding
+imap jj <Esc>
+
+"===============================================================================
+"************************************* LEADERS *********************************
+"===============================================================================
+
+" Fugitive status
+" Dependency: tpope/vim-fugitive
+nnoremap <leader>gs :Gstatus<CR>
+
+" Leader q for buffer deletion
+nnoremap <leader>q :bd<CR>
+nnoremap <leader>q! :bd!<CR>
+
+" Leader n for clearing search highlights
+nnoremap <leader>n :noh<CR>
+
+" cursor crosshairs for highly spacially sensitive work
+" i guess unimpaired has this?
+hi CursorLine   cterm=NONE ctermbg=darkred ctermfg=white guibg=darkred guifg=white
+hi CursorColumn cterm=NONE ctermbg=darkred ctermfg=white guibg=darkred guifg=white
+nnoremap <Leader>h :set cursorline! cursorcolumn!<CR>
+
+
+" ___WEIRDSHIT____
+
+" Preserve current state during wrapped command!
+
+function! Preserve(command)
+  " Preparation: save last search, and cursor position.
+  let _s=@/
+  let l = line(".")
+  let c = col(".")
+  " Do the business:
+  execute a:command
+  " Clean up: restore previous search history, and cursor position
+  let @/=_s
+  call cursor(l, c)
+endfunction
+
+" strip trailing whitespace.
+nmap _$ :call Preserve("%s/\\s\\+$//e")<CR>
+
+" reindent the current file.
+nmap _= :call Preserve("normal gg=G")<CR>

@@ -1,6 +1,0 @@
-(add-hook 'cider-repl-mode-hook 'paredit-mode)
-(add-hook 'cider-mode-hook 'paredit-mode)
-(add-hook 'cider-mode-hook 'rainbow-delimiters-mode)
-(add-to-list 'exec-path "/usr/local/bin")
-
-(add-hook 'clojure-mode-hook 'cider-mode)
