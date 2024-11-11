@@ -1,0 +1,14 @@
+[kubernetes]
+format = '[󱃾 $context($namespace)](dimmed green)'
+disabled = false
+[kubernetes.context_aliases]
+'arn:aws:eks:eu-west-1:196222785479:cluster/kibble-eu1-eks' = 'kibble-eu1'
+'arn:aws:eks:eu-west-1:900430522631:cluster/dogfood-eu1-eks' = 'dogfood-eu1'
+'arn:aws:eks:eu-west-1:919259170365:cluster/production-eu1-eks' = 'prod-eu1'
+'arn:aws:eks:us-east-1:702835727665:cluster/production-eks' = 'prod-us1'
+'arn:aws:eks:us-east-1:702835727665:cluster/dogfood-eks' = 'dogfood-us1'
+'arn:aws:eks:us-east-1:702835727665:cluster/kibble-eks' = 'kibble-us1'
+# ($cluster in )'dev.local.cluster.k8s' = 'dev'
+[kubernetes.user_aliases]
+# 'dev.local.cluster.k8s' = 'dev'
+# 'root/.*' = 'root'
