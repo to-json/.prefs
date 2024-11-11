@@ -17,3 +17,5 @@ vim.api.nvim_cmd({
   cmd = 'colorscheme',
   args = {'everforest'}
 }, {})
+set.list = true
+set.listchars= { tab = "⇥ ", leadmultispace = "꜏ ", trail = "‿", nbsp = "␣" }

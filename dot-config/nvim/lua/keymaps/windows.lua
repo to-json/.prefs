@@ -1,5 +1,5 @@
 local window_keymaps = { w = {
-    name = "+window",
+    name = "󰑃 window",
 
     h = { ":wincmd h<CR>", "move cursor one window left" },
     j = { ":wincmd j<CR>", "move cursor one window down" },

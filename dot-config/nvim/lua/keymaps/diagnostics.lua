@@ -1,11 +1,12 @@
 local opts = { noremap=true, silent=true }
-vim.keymap.set('n', '<Leader>sd', '<cmd>lua vim.diagnostic.show_line_diagnostics()<CR>', opts)
-vim.keymap.set('n', '<Leader>s[', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
-vim.keymap.set('n', '<Leader>s]', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
-vim.keymap.set('n', '<Leader>sq', '<cmd>lua vim.diagnostic.set_loclist()<CR>', opts)
+-- vim.keymap.set('n', '<Leader>sd', vim.diagnostic.show_line_diagnostics, opts)
+vim.keymap.set('n', '<Leader>s[', vim.diagnostic.goto_prev, opts)
+vim.keymap.set('n', '<Leader>s]', vim.diagnostic.goto_next, opts)
+vim.keymap.set('n', '<Leader>sl', vim.diagnostic.setloclist, opts)
+vim.keymap.set('n', '<Leader>sq', vim.diagnostic.setqflist, opts)
 
-local lsp_keymaps = { s = {
-    name = "lsp/diagnostics",
+local lsp_keymaps = { l = {
+    name = "󰑃 lsp/diagnostics",
   }
 }
 
